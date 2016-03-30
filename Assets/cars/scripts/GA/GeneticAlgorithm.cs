@@ -49,9 +49,11 @@ public class GeneticAlgorithm : MonoBehaviour {
     List<CarChromosome> GenerateCrossoveredPopulation() {
         currentPopulation.Sort((a, b) => {
             if (a.fitness > b.fitness) {
-                return 1;
-            } else if (a.fitness > b.fitness) {
+                Debug.LogFormat("{0} > {1}", a.fitness, b.fitness);
                 return -1;
+            } else if (a.fitness < b.fitness) {
+                Debug.LogFormat("{0} < {1}", a.fitness, b.fitness);
+                return 1;
             }
 
             return 0;
@@ -59,14 +61,19 @@ public class GeneticAlgorithm : MonoBehaviour {
 
         List<CarChromosome> newPopulation = new List<CarChromosome>((int) PopulationSize);
         for (var i = 0; i < EliteSelection && i < currentPopulation.Count; i++) {
+            Debug.Log("adds elite");
+            Debug.Log(currentPopulation[i].fitness);
             newPopulation.Add(currentPopulation[i]);
         }
 
-        RouletteWheelSelection.Evolve(currentPopulation, newPopulation, (int) PopulationSize - newPopulation.Count);
+        List<CarChromosome> evolvedCars = new List<CarChromosome>();
+        RouletteWheelSelection.Evolve(currentPopulation, evolvedCars, (int) PopulationSize - newPopulation.Count);
 
-        foreach (var chromosome in newPopulation) {
+        foreach (var chromosome in evolvedCars) {
             mutateChromosome(chromosome);
         }
+
+        newPopulation.AddRange(evolvedCars);
 
         return newPopulation;
     }

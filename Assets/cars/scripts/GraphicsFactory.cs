@@ -39,31 +39,61 @@ public class GraphicsFactory {
         texture.Apply();
 
         return texture;
-   }
+    }
 
+    // https://en.wikipedia.org/wiki/Midpoint_circle_algorithm
+    // plots a circle in a square texture 
     private static void drawOnTexture(Texture2D pTexture, int size) {
+        // radius of circle
         int r = size / 2;
+        // center of texture
+        int cx = r;
+        int cy = r;
 
         // fill texture with clear pixels
-        for (var x = 0; x < pTexture.width; x++) {
-            for (var y = 0; y < pTexture.height; y++) {
-                pTexture.SetPixel(x, y, Color.clear);
+        for (var i = 0; i < pTexture.width; i++) {
+            for (var j = 0; j < pTexture.height; j++) {
+                pTexture.SetPixel(i, j, Color.clear);
             }
         }
 
-        // sending 640 rays from center of texture each 0.5 degree 
-        for (float i = 0; i < 360; i+= 0.5f) {
-            // calculate angle in radians 
-            var angle = Mathf.Deg2Rad * i;
-            // draw points on line of this angle from r - 30 to r
-            for (var j = r - 30; j < r; j++) {
-                // calculate x and y 
-                int x = (int) (Mathf.Cos(angle) * j + r);
-                int y = (int) (Mathf.Sin(angle) * j + r);
+        int x = r;
+        int y = 0;
+        int decOver2 = 1 - x;
 
-                // setting needed color to texture
-                pTexture.SetPixel(x, y, Color.black);
+        Color wheelColor = new Color(0.5f, 0.5f, 0.5f, 0.7f);
+        while (y <= x) {
+            for (var i = -x + 2; i < x - 2; i++) {
+                pTexture.SetPixel(cx + i, cy + y - 2, wheelColor);
+                pTexture.SetPixel(cx + i, cy - y + 2, wheelColor);
             }
+            for (var j = -y + 2; j < y - 2; j++) {
+                pTexture.SetPixel(cx + j, cy + x - 2, wheelColor); 
+                pTexture.SetPixel(cx + j, cy - x + 2, wheelColor);
+            }
+
+            pTexture.SetPixel(cx + x, cy + y, Color.black); // 1 octant 
+            pTexture.SetPixel(cx + y, cy + x, Color.black); // 2 octant 
+            pTexture.SetPixel(cx - x, cy + y, Color.black); // 3 octant 
+            pTexture.SetPixel(cx - y, cy + x, Color.black); // 4 octant 
+
+            pTexture.SetPixel(cx - x, cy - y, Color.black); // 5 octant 
+            pTexture.SetPixel(cx - y, cy - x, Color.black); // 6 octant 
+            pTexture.SetPixel(cx + x, cy - y, Color.black); // 7 octant 
+            pTexture.SetPixel(cx + y, cy - x, Color.black); // 8 octant 
+
+            ++y;
+            if (decOver2 <= 0) {
+                decOver2 += 2 * y + 1;
+            } else {
+                --x;
+                decOver2 += 2 * (y - x) + 1;
+            }
+        };
+
+        // draw a line
+        for (var i = 0; i < r; i++) {
+            pTexture.SetPixel(i, cy, Color.black);
         }
     }
 }
